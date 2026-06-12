@@ -1,0 +1,77 @@
+# lion_step.dmc -- translation of lion_step.py.
+#
+# Same fixed-size Lion core: decoupled weight decay, sign update, and
+# exponential momentum. Mutation lives in main() to avoid tensor write-back
+# ambiguity in the current interpreter.
+
+fn grad(step: i64, i: i64) -> f64 {
+    if step == 1 {
+        match i {
+            0 => 0.30,
+            1 => -0.10,
+            2 => 0.00,
+            _ => 0.20,
+        }
+    } else if step == 2 {
+        match i {
+            0 => 0.25,
+            1 => -0.15,
+            2 => -0.05,
+            _ => 0.10,
+        }
+    } else {
+        match i {
+            0 => -0.10,
+            1 => -0.20,
+            2 => -0.08,
+            _ => 0.05,
+        }
+    }
+}
+
+fn sign(x: f64) -> f64 {
+    if x < 0.0 { -1.0 } else if x > 0.0 { 1.0 } else { 0.0 }
+}
+
+fn print_vec(label: str, x: Tensor[f64, [4]]) -> nil {
+    print(label)
+    for i in 0..4 {
+        print(x[i])
+        if i < 3 { print(" ") }
+    }
+    print("\n")
+    nil
+}
+
+fn main() -> nil {
+    let lr = 0.03
+    let beta1 = 0.9
+    let beta2 = 0.99
+    let weight_decay = 0.02
+
+    let !w = vault.zeros[f64, [4]]
+    w[0] = 0.80
+    w[1] = -0.40
+    w[2] = 1.25
+    w[3] = -1.75
+
+    let !m = vault.zeros[f64, [4]]
+
+    for step in 1..4 {
+        for i in 0..4 {
+            let g = grad(step, i)
+            w[i] = w[i] - lr * weight_decay * w[i]
+            let update = beta1 * m[i] + (1.0 - beta1) * g
+            w[i] = w[i] - lr * sign(update)
+            m[i] = beta2 * m[i] + (1.0 - beta2) * g
+        }
+
+        print("step ")
+        print(step)
+        print("\n")
+        print_vec("  w=", w)
+        print_vec("  m=", m)
+    }
+
+    nil
+}

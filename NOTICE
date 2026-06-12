@@ -1,0 +1,13 @@
+lion-step-dmc
+=============
+
+This is a demoniC reimplementation of a published algorithm.
+
+  Algorithm:  Lion optimizer (EvoLved Sign Momentum)
+  Reference:  https://arxiv.org/abs/2302.06675 (Chen et al., 2023)
+  Author(s):  the original authors
+
+Algorithms are not copyrightable; this port reimplements the math, not any
+specific source code, so it carries no upstream code license. It is released
+UNLICENSED. For the original work and any rights in it, defer to the original
+author. ¯\_(ツ)_/¯
