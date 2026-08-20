@@ -1,0 +1,31 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  schedule:
+    # Watch the public demoniC compiler: rebuild against its current main
+    # daily and fail loudly if this port stops working under it.
+    - cron: "40 9 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Build dmc, run, verify vs reference
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Build dmc from the public demoniC repo
+        run: |
+          git clone --depth 1 https://github.com/GusFromSpace/demoniC "$RUNNER_TEMP/demoniC"
+          cargo build --release --manifest-path "$RUNNER_TEMP/demoniC/compiler/Cargo.toml"
+      - name: dmc run
+        run: |
+          "$RUNNER_TEMP/demoniC/compiler/target/release/dmc" run lion_step.dmc
+      - name: Numeric verification vs lion_step.py
+        run: DMC="$RUNNER_TEMP/demoniC/compiler/target/release/dmc" bash verify/run.sh
